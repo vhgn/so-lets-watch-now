@@ -123,27 +123,27 @@ export default function WatchPage() {
     setDoc(docRef, updatedWatchList)
   }
 
-  async function handleSeek() {
-    if (watchList === null) {
-      return
-    }
+  // async function handleSeek() {
+  //   if (watchList === null) {
+  //     return
+  //   }
 
-    if (docRef === null) {
-      return
-    }
+  //   if (docRef === null) {
+  //     return
+  //   }
 
-    if (videoRef.current === null) {
-      return
-    }
+  //   if (videoRef.current === null) {
+  //     return
+  //   }
 
-    const updatedWatchList: WatchList = {
-      ...watchList,
-      time: videoRef.current.currentTime,
-      updatedAt: Date.now(),
-    }
+  //   const updatedWatchList: WatchList = {
+  //     ...watchList,
+  //     time: videoRef.current.currentTime,
+  //     updatedAt: Date.now(),
+  //   }
 
-    setDoc(docRef, updatedWatchList)
-  }
+  //   setDoc(docRef, updatedWatchList)
+  // }
 
   const updateVideo = useCallback(async function(watchList: WatchList) {
     const videoElement = videoRef.current

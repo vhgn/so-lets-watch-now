@@ -69,19 +69,9 @@ export default function WatchPage() {
       return
     }
 
-    const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
-    const othersTime = secondsFromLastUpdate + watchList.time
-    const delayFromOthers = Math.abs(othersTime - videoRef.current.currentTime)
+    updateVideo(watchList, videoRef.current)
 
-    if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
-      videoRef.current.currentTime = othersTime
-      if (watchList.playing && videoRef.current.paused) {
-        videoRef.current.play()
-      } else if (!watchList.playing && !videoRef.current.paused){
-        videoRef.current.pause()
-      }
-    }
-  }, [watchList, videoRef])
+  }, [watchList?.updatedAt, videoRef])
 
   async function handlePlay() {
     if (watchList === null) {
@@ -94,6 +84,10 @@ export default function WatchPage() {
 
     if (videoRef.current === null) {
       return
+    }
+
+    if (videoRef.current.paused) {
+      videoRef.current.play()
     }
 
     const updatedWatchList: WatchList = {
@@ -117,6 +111,10 @@ export default function WatchPage() {
 
     if (videoRef.current === null) {
       return
+    }
+
+    if (!videoRef.current.paused) {
+      videoRef.current.pause()
     }
 
     const updatedWatchList: WatchList = {
@@ -151,6 +149,33 @@ export default function WatchPage() {
     setDoc(docRef, updatedWatchList)
   }
 
+  function updateVideo(watchList: WatchList, videoElement: HTMLVideoElement) {
+    const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
+    const othersTime = secondsFromLastUpdate + watchList.time
+    const delayFromOthers = Math.abs(othersTime - videoElement.currentTime)
+
+    if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
+      videoElement.currentTime = othersTime
+      if (watchList.playing && videoElement.paused) {
+        videoElement.play()
+      } else if (!watchList.playing && !videoElement.paused) {
+        videoElement.pause()
+      }
+    }
+  }
+
+  function handleJoin() {
+    if (videoRef.current === null) {
+      return
+    }
+
+    if (watchList === null) {
+      return
+    }
+
+    updateVideo(watchList, videoRef.current)
+  }
+
   return <>
     {
       videoUrl === null
@@ -158,13 +183,17 @@ export default function WatchPage() {
         : <>
           <video
             src={videoUrl}
-            controls
             playsInline
             ref={videoRef}
             onPlay={handlePlay}
             onPause={handlePause}
             onSeeked={handleSeek}
           />
+          <div className="flex gap-4 bg-[red]">
+            <button onClick={handleJoin}>Sync</button>
+            <button onClick={handlePlay}>Play</button>
+            <button onClick={handlePause}>Pause</button>
+          </div>
         </>
     }
   </>

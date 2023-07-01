@@ -25,14 +25,13 @@ export default function HomaPage() {
       }
 
       const videoFileRef = ref(getStorage(), fileName)
-      await uploadBytes(videoFileRef, photo)
+      await uploadBytes(videoFileRef, file)
 
       fileInput.click()
-
-
     }
 
     return <>
-      <button onClick={handleAddVideo}>Click me</button>
+      <button onClick={handleAddVideo}>Upload</button>
     </>
   }
+}

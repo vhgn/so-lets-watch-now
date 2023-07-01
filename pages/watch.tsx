@@ -202,7 +202,7 @@ export default function WatchPage() {
             ref={videoRef}
             onPlay={handlePlay}
             onPause={handlePause}
-            onSeeked={handleSeek}
+            // onSeeked={handleSeek}
           />
           <div className="flex gap-4 bg-[red]">
             <button onClick={handleJoin}>Sync</button>

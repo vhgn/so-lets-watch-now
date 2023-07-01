@@ -197,6 +197,7 @@ export default function WatchPage() {
           <video
             src={videoUrl}
             playsInline
+            controls
             ref={videoRef}
             onPlay={handlePlay}
             onPause={handlePause}

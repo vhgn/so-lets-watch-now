@@ -11,7 +11,7 @@ const watchListSchema = z.object({
   url: z.string(),
 })
 
-const ALLOWED_DELAY_SECONDS = 5
+const ALLOWED_DELAY_SECONDS = 3
 
 export type WatchList = z.infer<typeof watchListSchema>
 
@@ -44,7 +44,7 @@ export default function WatchPage() {
     const currentDocRef = doc(firestore, "watchList", id)
     setDocRef(currentDocRef)
 
-    onSnapshot(currentDocRef, async (doc) => {
+    const unsubscribe = onSnapshot(currentDocRef, async (doc) => {
       const newWatchList = watchListSchema.parse(doc.data())
       setWatchList(newWatchList)
 
@@ -58,6 +58,10 @@ export default function WatchPage() {
         setVideoUrl(url)
       }
     })
+
+    return () => {
+      unsubscribe()
+    }
   }, [router])
 
   useEffect(() => {
@@ -70,7 +74,6 @@ export default function WatchPage() {
     }
 
     updateVideo(watchList, videoRef.current)
-
   }, [watchList?.updatedAt, videoRef])
 
   async function handlePlay() {
@@ -153,6 +156,8 @@ export default function WatchPage() {
     const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
     const othersTime = secondsFromLastUpdate + watchList.time
     const delayFromOthers = Math.abs(othersTime - videoElement.currentTime)
+
+    console.log("Delay from others:", delayFromOthers)
 
     if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
       videoElement.currentTime = othersTime

@@ -58,7 +58,7 @@ export default function Home() {
         setVideoUrl(url)
       }
     })
-  }, [])
+  }, [router])
 
   useEffect(() => {
     if (watchList === null) {

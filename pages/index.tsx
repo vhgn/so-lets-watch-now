@@ -20,9 +20,13 @@ export default function HomaPage() {
       const fileName = `movies/${id}.mp4`
       const watchList: WatchList = {
         time: 0,
+        playing: false,
         url: fileName,
-        createdAt: Date.now(),
+        updatedAt: Date.now(),
       }
+
+
+      /// TODO: Add the video to the database
 
       const videoFileRef = ref(getStorage(), fileName)
       await uploadBytes(videoFileRef, file)

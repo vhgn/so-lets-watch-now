@@ -34,7 +34,7 @@ export default function WatchPage() {
 
 
     const secondsFromLastUpdate = (Date.now() - newWatchList.updatedAt) / 1000
-    const othersTime = secondsFromLastUpdate + newWatchList.time
+    const othersTime = newWatchList.playing ? secondsFromLastUpdate + newWatchList.time : newWatchList.time
     const delayFromOthers = Math.abs(othersTime - videoElement.currentTime)
 
     console.log("Delay from others:", delayFromOthers)

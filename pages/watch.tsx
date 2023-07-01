@@ -159,7 +159,7 @@ export default function Home() {
           <video
             src={videoUrl}
             controls
-            autoPlay
+            playsInline
             ref={videoRef}
             onPlay={handlePlay}
             onPause={handlePause}

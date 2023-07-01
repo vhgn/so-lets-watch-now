@@ -1,7 +1,7 @@
 import { getFirestore, doc, onSnapshot, DocumentData, DocumentReference, setDoc } from "firebase/firestore"
 import { getDownloadURL, getStorage, ref } from "firebase/storage"
 import { useRouter } from "next/router"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { z } from "zod"
 
 const watchListSchema = z.object({
@@ -49,20 +49,13 @@ export default function WatchPage() {
       setWatchList(newWatchList)
 
       console.log("Watch list updated")
-      if (newWatchList.url !== watchList?.url) {
-        const storage = getStorage();
-        const storageRef = ref(storage, newWatchList.url);
-
-        console.log("Getting download URL")
-        const url = await getDownloadURL(storageRef)
-        setVideoUrl(url)
-      }
+      updateVideo(newWatchList)
     })
 
     return () => {
       unsubscribe()
     }
-  }, [router])
+  }, [router, videoRef])
 
   useEffect(() => {
     if (watchList === null) {
@@ -73,7 +66,7 @@ export default function WatchPage() {
       return
     }
 
-    updateVideo(watchList, videoRef.current)
+    updateVideo(watchList)
   }, [watchList?.updatedAt, videoRef])
 
   async function handlePlay() {
@@ -152,22 +145,39 @@ export default function WatchPage() {
     setDoc(docRef, updatedWatchList)
   }
 
-  function updateVideo(watchList: WatchList, videoElement: HTMLVideoElement) {
+  const updateVideo = useCallback(async function(watchList: WatchList) {
+    const videoElement = videoRef.current
+
+    if (videoElement === null) {
+      return
+    }
+
+    if (watchList.url !== watchList?.url) {
+      const storage = getStorage();
+      const storageRef = ref(storage, watchList.url);
+
+      console.log("Getting download URL")
+      const url = await getDownloadURL(storageRef)
+      setVideoUrl(url)
+    }
+
     const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
     const othersTime = secondsFromLastUpdate + watchList.time
     const delayFromOthers = Math.abs(othersTime - videoElement.currentTime)
 
     console.log("Delay from others:", delayFromOthers)
+    console.log("Update state", watchList)
 
     if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
       videoElement.currentTime = othersTime
-      if (watchList.playing && videoElement.paused) {
+      if (watchList.playing) {
+        console.log("Playing")
         videoElement.play()
-      } else if (!watchList.playing && !videoElement.paused) {
+      } else {
         videoElement.pause()
       }
     }
-  }
+  }, [videoRef])
 
   function handleJoin() {
     if (videoRef.current === null) {
@@ -178,7 +188,7 @@ export default function WatchPage() {
       return
     }
 
-    updateVideo(watchList, videoRef.current)
+    updateVideo(watchList)
   }
 
   return <>

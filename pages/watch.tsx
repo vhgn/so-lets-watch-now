@@ -25,6 +25,32 @@ export default function WatchPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
+  async function updateVideo(newWatchList: WatchList) {
+    const videoElement = videoRef.current
+
+    if (videoElement === null) {
+      return
+    }
+
+
+    const secondsFromLastUpdate = (Date.now() - newWatchList.updatedAt) / 1000
+    const othersTime = secondsFromLastUpdate + newWatchList.time
+    const delayFromOthers = Math.abs(othersTime - videoElement.currentTime)
+
+    console.log("Delay from others:", delayFromOthers)
+    console.log("Update state", newWatchList)
+
+    if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
+      videoElement.currentTime = othersTime
+      if (newWatchList.playing) {
+        console.log("Playing")
+        videoElement.play()
+      } else {
+        videoElement.pause()
+      }
+    }
+  }
+
   useEffect(() => {
     if (!router.isReady) {
       return
@@ -49,7 +75,14 @@ export default function WatchPage() {
       setWatchList(newWatchList)
 
       console.log("Watch list updated")
-      updateVideo(newWatchList)
+      if (newWatchList.url !== watchList?.url) {
+        const storage = getStorage();
+        const storageRef = ref(storage, newWatchList.url);
+
+        console.log("Getting download URL")
+        const url = await getDownloadURL(storageRef)
+        setVideoUrl(url)
+      }
     })
 
     return () => {
@@ -67,7 +100,7 @@ export default function WatchPage() {
     }
 
     updateVideo(watchList)
-  }, [watchList?.updatedAt, videoRef])
+  }, [watchList?.updatedAt, videoRef, updateVideo])
 
   async function handlePlay() {
     if (watchList === null) {
@@ -144,41 +177,6 @@ export default function WatchPage() {
 
   //   setDoc(docRef, updatedWatchList)
   // }
-
-  const updateVideo = useCallback(async function(watchList: WatchList) {
-    const videoElement = videoRef.current
-
-    if (videoElement === null) {
-      return
-    }
-
-    if (watchList.url !== watchList?.url) {
-      const storage = getStorage();
-      const storageRef = ref(storage, watchList.url);
-
-      console.log("Getting download URL")
-      const url = await getDownloadURL(storageRef)
-      setVideoUrl(url)
-    }
-
-    const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
-    const othersTime = secondsFromLastUpdate + watchList.time
-    const delayFromOthers = Math.abs(othersTime - videoElement.currentTime)
-
-    console.log("Delay from others:", delayFromOthers)
-    console.log("Update state", watchList)
-
-    if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
-      videoElement.currentTime = othersTime
-      if (watchList.playing) {
-        console.log("Playing")
-        videoElement.play()
-      } else {
-        videoElement.pause()
-      }
-    }
-  }, [videoRef])
-
   function handleJoin() {
     if (videoRef.current === null) {
       return
@@ -202,7 +200,7 @@ export default function WatchPage() {
             ref={videoRef}
             onPlay={handlePlay}
             onPause={handlePause}
-            // onSeeked={handleSeek}
+          // onSeeked={handleSeek}
           />
           <div className="flex gap-4 bg-[red]">
             <button onClick={handleJoin}>Sync</button>

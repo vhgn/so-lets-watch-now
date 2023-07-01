@@ -15,7 +15,7 @@ const ALLOWED_DELAY_SECONDS = 5
 
 export type WatchList = z.infer<typeof watchListSchema>
 
-export default function Home() {
+export default function WatchPage() {
   const firestore = getFirestore()
 
   const router = useRouter()
@@ -72,6 +72,7 @@ export default function Home() {
     const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
     const othersTime = secondsFromLastUpdate + watchList.time
     const delayFromOthers = Math.abs(othersTime - videoRef.current.currentTime)
+    console.log(delayFromOthers)
     if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
       videoRef.current.currentTime = othersTime
       if (watchList.playing) {
@@ -80,7 +81,7 @@ export default function Home() {
         videoRef.current.pause()
       }
     }
-  }, [])
+  }, [watchList])
 
   async function handlePlay() {
     if (watchList === null) {
@@ -144,7 +145,6 @@ export default function Home() {
     const updatedWatchList: WatchList = {
       ...watchList,
       time: videoRef.current.currentTime,
-      playing: videoRef.current.paused,
       updatedAt: Date.now(),
     }
 

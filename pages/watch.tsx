@@ -72,16 +72,16 @@ export default function WatchPage() {
     const secondsFromLastUpdate = (Date.now() - watchList.updatedAt) / 1000
     const othersTime = secondsFromLastUpdate + watchList.time
     const delayFromOthers = Math.abs(othersTime - videoRef.current.currentTime)
-    console.log(delayFromOthers)
+
     if (delayFromOthers > ALLOWED_DELAY_SECONDS) {
       videoRef.current.currentTime = othersTime
-      if (watchList.playing) {
+      if (watchList.playing && videoRef.current.paused) {
         videoRef.current.play()
-      } else {
+      } else if (!watchList.playing && !videoRef.current.paused){
         videoRef.current.pause()
       }
     }
-  }, [watchList])
+  }, [watchList, videoRef])
 
   async function handlePlay() {
     if (watchList === null) {
